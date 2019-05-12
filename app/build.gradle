@@ -72,5 +72,10 @@ dependencies {
     // Moshi Library
     implementation "com.squareup.moshi:moshi-kotlin:1.8.0"
 
+    // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.1"
+
+    // Glide
+    implementation "com.github.bumptech.glide:glide:$version_glide"
+    annotationProcessor "com.github.bumptech.glide:compiler:$version_glide"
 }
