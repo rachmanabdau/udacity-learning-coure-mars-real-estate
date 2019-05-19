@@ -17,6 +17,7 @@
 
 package com.example.android.marsrealestate
 
+import android.view.View
 import android.widget.ImageView
 import androidx.core.net.toUri
 import androidx.databinding.BindingAdapter
@@ -24,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.android.marsrealestate.network.MarsProperty
+import com.example.android.marsrealestate.overview.MarsApiStatus
 import com.example.android.marsrealestate.overview.PhotoGridAdapter
 
 
@@ -43,5 +45,22 @@ fun bindImage(imageView: ImageView, imgUrl: String?) {
                         .placeholderOf(R.drawable.loading_animation)
                         .error(R.drawable.ic_broken_image))
                 .into(imageView)
+    }
+}
+
+@BindingAdapter("marsApiStatus")
+fun bindStatus(imageView: ImageView, marsApiStatus: MarsApiStatus?) {
+    when (marsApiStatus) {
+        MarsApiStatus.LOADING -> {
+            imageView.visibility = View.VISIBLE
+            imageView.setImageResource(R.drawable.loading_img)
+        }
+        MarsApiStatus.FAILED -> {
+            imageView.visibility = View.VISIBLE
+            imageView.setImageResource(R.drawable.ic_connection_error)
+        }
+        MarsApiStatus.DONE -> {
+            imageView.visibility = View.GONE
+        }
     }
 }
