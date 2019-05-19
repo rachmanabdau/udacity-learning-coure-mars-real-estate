@@ -36,14 +36,14 @@ class OverviewViewModel : ViewModel() {
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
     // The internal MutableLiveData String that stores the status of the most recent request
     private val _status = MutableLiveData<String>()
-    private val _property = MutableLiveData<MarsProperty>()
+    private val _properties = MutableLiveData<List<MarsProperty>>()
 
     // The external immutable LiveData for the request status String
     val status: LiveData<String>
         get() = _status
 
-    val property: LiveData<MarsProperty>
-        get() = _property
+    val properties: LiveData<List<MarsProperty>>
+        get() = _properties
 
     /**
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
@@ -58,13 +58,10 @@ class OverviewViewModel : ViewModel() {
     private fun getMarsRealEstateProperties() {
         // (5) Call the MarsApi to enqueue the Retrofit request, implementing the callbacks
         coroutineScope.launch {
-            var getPropertiesDeferred = MarsApi.retrofitService.getPRoperties()
+            val getPropertiesDeferred = MarsApi.retrofitService.getPRoperties()
             try {
-                var listResult = getPropertiesDeferred.await()
-                if (listResult.size > 0) {
-                    _property.value = listResult[0]
-
-                }
+                val listResult = getPropertiesDeferred.await()
+                _properties.value = listResult
             } catch (t: Throwable) {
                 _status.value = "Failure: " + t.message
             }
