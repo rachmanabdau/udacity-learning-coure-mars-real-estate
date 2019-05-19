@@ -41,6 +41,7 @@ class OverviewViewModel : ViewModel() {
     // The internal MutableLiveData String that stores the status of the most recent request
     private val _status = MutableLiveData<MarsApiStatus>()
     private val _properties = MutableLiveData<List<MarsProperty>>()
+    private val _navigateToSelectedProperties = MutableLiveData<MarsProperty>()
 
     // The external immutable LiveData for the request status String
     val status: LiveData<MarsApiStatus>
@@ -48,6 +49,9 @@ class OverviewViewModel : ViewModel() {
 
     val properties: LiveData<List<MarsProperty>>
         get() = _properties
+
+    val navigateToSelectedProperty: LiveData<MarsProperty>
+        get() = _navigateToSelectedProperties
 
     /**
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
@@ -73,6 +77,14 @@ class OverviewViewModel : ViewModel() {
                 _properties.value = emptyList()
             }
         }
+    }
+
+    fun displayPropertyDetails(marsProperty: MarsProperty) {
+        _navigateToSelectedProperties.value = marsProperty
+    }
+
+    fun displayPropertyDisplayComplete() {
+        _navigateToSelectedProperties.value = null
     }
 
     override fun onCleared() {
