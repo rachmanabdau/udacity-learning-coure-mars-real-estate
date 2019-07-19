@@ -17,12 +17,14 @@
 
 package com.example.android.marsrealestate.overview
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.example.android.marsrealestate.data.network.MarsApi
+import android.app.Application
+import android.content.Context
+import android.net.ConnectivityManager
+import androidx.lifecycle.*
+import com.example.android.marsrealestate.data.local.MarsDatabase
+import com.example.android.marsrealestate.data.local.MarsEntity
 import com.example.android.marsrealestate.data.network.MarsApiFilter
-import com.example.android.marsrealestate.data.network.MarsProperty
+import com.example.android.marsrealestate.repository.Repository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,53 +37,68 @@ enum class MarsApiStatus {
     LOADING, DONE, FAILED
 }
 
-class OverviewViewModel : ViewModel() {
+class OverviewViewModel(app: Application, private val context: Context) : AndroidViewModel(app) {
 
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
+    private val database = MarsDatabase.getInstance(app)
+    private val repository = Repository(database)
+
     // The internal MutableLiveData String that stores the status of the most recent request
     private val _status = MutableLiveData<MarsApiStatus>()
-    private val _properties = MutableLiveData<List<MarsProperty>>()
-    private val _navigateToSelectedProperties = MutableLiveData<MarsProperty>()
+    private val _properties = MutableLiveData<List<MarsEntity>?>()
+    private val _navigateToSelectedProperties = MutableLiveData<MarsEntity>()
 
     // The external immutable LiveData for the request status String
     val status: LiveData<MarsApiStatus>
         get() = _status
 
-    val properties: LiveData<List<MarsProperty>>
+    val properties: LiveData<List<MarsEntity>?>
         get() = _properties
 
-    val navigateToSelectedProperty: LiveData<MarsProperty>
+    val navigateToSelectedProperty: LiveData<MarsEntity>
         get() = _navigateToSelectedProperties
 
     /**
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
      */
     init {
-        getMarsRealEstateProperties(MarsApiFilter.SHOW_ALL)
+        populateDatabase()
+        getMarsRealEstateProperties()
     }
 
     /**
      * Sets the value of the status LiveData to the Mars API status.
      */
-    private fun getMarsRealEstateProperties(marsApiFilter: MarsApiFilter) {
+    private fun getMarsRealEstateProperties() {
         // (5) Call the MarsApi to enqueue the Retrofit request, implementing the callbacks
         coroutineScope.launch {
-            val getPropertiesDeferred = MarsApi.retrofitService.getPRoperties(marsApiFilter.value)
             try {
-                val listResult = getPropertiesDeferred.await()
                 _status.value = MarsApiStatus.LOADING
-                _properties.value = listResult
+                _properties.value = repository.getAllProperties()
                 _status.value = MarsApiStatus.DONE
             } catch (t: Throwable) {
                 _status.value = MarsApiStatus.FAILED
-                _properties.value = emptyList()
             }
         }
     }
 
-    fun displayPropertyDetails(marsProperty: MarsProperty) {
-        _navigateToSelectedProperties.value = marsProperty
+    private fun populateDatabase() {
+        coroutineScope.launch {
+            if (isNetworkAvailable()) {
+                repository.refreshProperties()
+            }
+        }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        val activeNetworkInfo = connectivityManager!!.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    }
+
+    fun displayPropertyDetails(marsEntity: MarsEntity) {
+        _navigateToSelectedProperties.value = marsEntity
     }
 
     fun displayPropertyDisplayComplete() {
@@ -89,11 +106,24 @@ class OverviewViewModel : ViewModel() {
     }
 
     fun updateFilterProperty(filter: MarsApiFilter) {
-        getMarsRealEstateProperties(filter)
+        coroutineScope.launch {
+            _properties.value = repository.getProperties(filter)
+        }
     }
 
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()
+    }
+
+    class Factory(val app: Application, val context: Context) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(OverviewViewModel::class.java))
+                return OverviewViewModel(app, context) as T
+
+            throw IllegalArgumentException("Unable to construct viewModel (OverviewViewModel).")
+        }
+
     }
 }

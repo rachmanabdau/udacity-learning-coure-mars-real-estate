@@ -22,10 +22,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.android.marsrealestate.data.network.MarsProperty
+import com.example.android.marsrealestate.data.local.MarsEntity
 import com.example.android.marsrealestate.databinding.GridViewItemBinding
 
-class PhotoGridAdapter(val onClickListener: OnClickListener) : ListAdapter<MarsProperty, PhotoGridAdapter.MarsPropertyViewHolder>(DiffCallback) {
+class PhotoGridAdapter(val onClickListener: OnClickListener) : ListAdapter<MarsEntity, PhotoGridAdapter.MarsPropertyViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):
             MarsPropertyViewHolder {
@@ -40,25 +40,25 @@ class PhotoGridAdapter(val onClickListener: OnClickListener) : ListAdapter<MarsP
         }
     }
 
-    companion object DiffCallback : DiffUtil.ItemCallback<MarsProperty>() {
-        override fun areItemsTheSame(oldItem: MarsProperty, newItem: MarsProperty): Boolean {
+    companion object DiffCallback : DiffUtil.ItemCallback<MarsEntity>() {
+        override fun areItemsTheSame(oldItem: MarsEntity, newItem: MarsEntity): Boolean {
             return oldItem === newItem
         }
 
-        override fun areContentsTheSame(oldItem: MarsProperty, newItem: MarsProperty): Boolean {
+        override fun areContentsTheSame(oldItem: MarsEntity, newItem: MarsEntity): Boolean {
             return oldItem.id == newItem.id
         }
     }
 
     class MarsPropertyViewHolder(private var binding: GridViewItemBinding) :
             RecyclerView.ViewHolder(binding.root) {
-        fun bind(marsProperty: MarsProperty) {
-            binding.property = marsProperty
+        fun bind(marsEntity: MarsEntity) {
+            binding.property = marsEntity
             binding.executePendingBindings()
         }
     }
 
-    class OnClickListener(val clickListener: (marsProperty: MarsProperty) -> Unit) {
-        fun onClick(marsProperty: MarsProperty) = clickListener(marsProperty)
+    class OnClickListener(val clickListener: (marsEntity: MarsEntity) -> Unit) {
+        fun onClick(marsEntity: MarsEntity) = clickListener(marsEntity)
     }
 }

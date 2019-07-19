@@ -24,7 +24,6 @@ import kotlinx.coroutines.Deferred
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Query
 
 enum class MarsApiFilter(val value: String) {
     SHOW_RENT("rent"), SHOW_BUY("buy"), SHOW_ALL("all")
@@ -46,7 +45,7 @@ private val retrofit = Retrofit.Builder()
 // (03) Implement the MarsApiService interface with @GET getProperties returning a String
 interface MarsApiService {
     @GET("realestate")
-    fun getPRoperties(@Query("filter") type: String):
+    fun getPRoperties():
             Deferred<List<MarsProperty>>
 }
 

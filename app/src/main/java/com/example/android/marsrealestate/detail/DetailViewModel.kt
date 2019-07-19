@@ -19,25 +19,25 @@ package com.example.android.marsrealestate.detail
 import android.app.Application
 import androidx.lifecycle.*
 import com.example.android.marsrealestate.R
-import com.example.android.marsrealestate.data.network.MarsProperty
+import com.example.android.marsrealestate.data.local.MarsEntity
 
 /**
  * The [ViewModel] that is associated with the [DetailFragment].
  */
-class DetailViewModel(marsProperty: MarsProperty, app: Application) : AndroidViewModel(app) {
+class DetailViewModel(marsEntity: MarsEntity, app: Application) : AndroidViewModel(app) {
 
-    private val _selectedProperty = MutableLiveData<MarsProperty>()
+    private val _selectedProperty = MutableLiveData<MarsEntity>()
 
-    val selectedProperty: LiveData<MarsProperty>
+    val selectedProperty: LiveData<MarsEntity>
         get() = _selectedProperty
 
     init {
-        _selectedProperty.value = marsProperty
+        _selectedProperty.value = marsEntity
     }
 
     val displayPropertyPrice = Transformations.map(selectedProperty) {
         app.applicationContext.getString(
-                when (it.isRental) {
+                when (it.type.equals("rent")) {
                     true -> R.string.display_price_monthly_rental
                     false -> R.string.display_price
                 }, it.price)
@@ -46,7 +46,7 @@ class DetailViewModel(marsProperty: MarsProperty, app: Application) : AndroidVie
     val displayPropertyType = Transformations.map(selectedProperty) {
         app.applicationContext.getString(R.string.display_type,
                 app.applicationContext.getString(
-                        when (it.isRental) {
+                        when (it.type.equals("rent")) {
                             true -> R.string.type_rent
                             false -> R.string.type_sale
                         }))
