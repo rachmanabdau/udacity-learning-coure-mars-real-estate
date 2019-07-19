@@ -15,7 +15,7 @@
  *
  */
 
-package com.example.android.marsrealestate.network
+package com.example.android.marsrealestate.data.network
 
 import android.os.Parcelable
 import com.squareup.moshi.Json

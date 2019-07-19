@@ -22,14 +22,14 @@ apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs"
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     dataBinding {
         enabled = true
     }
     defaultConfig {
         applicationId "com.example.android.marsrealestate"
         minSdkVersion 19
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -78,4 +78,11 @@ dependencies {
     // Glide
     implementation "com.github.bumptech.glide:glide:$version_glide"
     annotationProcessor "com.github.bumptech.glide:compiler:$version_glide"
+
+    // Room
+    annotationProcessor 'androidx.room:room-compiler:2.2.0-alpha01'
+    implementation 'androidx.room:room-common:2.2.0-alpha01'
+    implementation 'androidx.room:room-ktx:2.2.0-alpha01'
+    implementation 'androidx.room:room-runtime:2.2.0-alpha01'
+    implementation 'androidx.room:room-testing:2.2.0-alpha01'
 }

@@ -15,7 +15,7 @@
  *
  */
 
-package com.example.android.marsrealestate.network
+package com.example.android.marsrealestate.data.network
 
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
