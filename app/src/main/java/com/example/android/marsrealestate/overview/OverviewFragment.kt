@@ -79,11 +79,16 @@ class OverviewFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        viewModel.getProperties(when (item!!.itemId) {
-            R.id.show_rent_menu -> MarsApiFilter.SHOW_RENT
-            R.id.show_buy_menu -> MarsApiFilter.SHOW_BUY
-            else -> MarsApiFilter.SHOW_ALL
-        })
+        when (item!!.itemId) {
+            R.id.refresh_data -> viewModel.populateDatabase()
+            else -> {
+                viewModel.getProperties(when (item.itemId) {
+                    R.id.show_rent_menu -> MarsApiFilter.SHOW_RENT
+                    R.id.show_buy_menu -> MarsApiFilter.SHOW_BUY
+                    else -> MarsApiFilter.SHOW_ALL
+                })
+            }
+        }
 
         return true
     }

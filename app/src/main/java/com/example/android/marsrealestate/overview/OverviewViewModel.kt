@@ -67,10 +67,10 @@ class OverviewViewModel(app: Application, private val context: Context) : Androi
     }
 
     /**
-     *
+     * Populate data from database.
      * Sets the value of the status LiveData to the Mars API status.
      */
-    private fun populateDatabase() {
+    fun populateDatabase() {
         coroutineScope.launch {
             if (isNetworkAvailable()) {
                 try {
@@ -86,7 +86,7 @@ class OverviewViewModel(app: Application, private val context: Context) : Androi
         }
     }
 
-    private fun isNetworkAvailable(): Boolean {
+    fun isNetworkAvailable(): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
         val activeNetworkInfo = connectivityManager!!.activeNetworkInfo
         return activeNetworkInfo != null && activeNetworkInfo.isConnected

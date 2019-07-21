@@ -53,7 +53,7 @@ fun bindStatus(imageView: ImageView, marsApiStatus: MarsApiStatus?) {
     when (marsApiStatus) {
         MarsApiStatus.LOADING -> {
             imageView.visibility = View.VISIBLE
-            imageView.setImageResource(R.drawable.loading_img)
+            imageView.setImageResource(R.drawable.loading_animation)
         }
         MarsApiStatus.FAILED -> {
             imageView.visibility = View.VISIBLE
