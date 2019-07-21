@@ -9,24 +9,37 @@ import kotlinx.coroutines.withContext
 
 class Repository(private val database: MarsDatabase) {
 
-    suspend fun getAllProperties(): List<MarsEntity>? {
+    /**
+     * Take data from server and insert to database an then
+     * retrieve data from database to be displayed in the UI
+     */
+    suspend fun fetchProperties(): List<MarsEntity>? {
         return withContext(Dispatchers.IO) {
+            refreshData()
             database.marsDao.getAlldata()
         }
     }
 
-    suspend fun refreshProperties() {
-        withContext(Dispatchers.IO) {
-            val propertiesFromNetwork = MarsApi.retrofitService.getPRoperties().await()
-            for (i in propertiesFromNetwork) {
-                database.marsDao.insert(MarsEntity.networkToLocal(i))
-            }
+    /**
+     * Refresh data by retrieving data from server and then save it to database
+     */
+    suspend fun refreshData() {
+        val propertiesFromNetwork = MarsApi.retrofitService.getPRoperties().await()
+        for (i in propertiesFromNetwork) {
+            database.marsDao.insert(MarsEntity.networkToLocal(i))
         }
     }
 
-    suspend fun getProperties(filter: MarsApiFilter): List<MarsEntity>? {
+    /**
+     * Retrieve data from data with filtered or not filtered data
+     */
+    suspend fun getFilteredProperties(filter: MarsApiFilter): List<MarsEntity>? {
         return withContext(Dispatchers.IO) {
-            database.marsDao.getFilteredProperties(filter.value)
+            if (filter == MarsApiFilter.SHOW_ALL) {
+                database.marsDao.getAlldata()
+            } else {
+                database.marsDao.getFilteredProperties(filter.value)
+            }
         }
     }
 }

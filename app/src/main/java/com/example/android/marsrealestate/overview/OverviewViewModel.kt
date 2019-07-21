@@ -64,29 +64,24 @@ class OverviewViewModel(app: Application, private val context: Context) : Androi
      */
     init {
         populateDatabase()
-        getMarsRealEstateProperties()
     }
 
     /**
+     *
      * Sets the value of the status LiveData to the Mars API status.
      */
-    private fun getMarsRealEstateProperties() {
-        // (5) Call the MarsApi to enqueue the Retrofit request, implementing the callbacks
-        coroutineScope.launch {
-            try {
-                _status.value = MarsApiStatus.LOADING
-                _properties.value = repository.getAllProperties()
-                _status.value = MarsApiStatus.DONE
-            } catch (t: Throwable) {
-                _status.value = MarsApiStatus.FAILED
-            }
-        }
-    }
-
     private fun populateDatabase() {
         coroutineScope.launch {
             if (isNetworkAvailable()) {
-                repository.refreshProperties()
+                try {
+                    _status.value = MarsApiStatus.LOADING
+                    _properties.value = repository.fetchProperties()
+                    _status.value = MarsApiStatus.DONE
+                } catch (e: Throwable) {
+                    _status.value = MarsApiStatus.FAILED
+                }
+            } else {
+                _status.value = MarsApiStatus.FAILED
             }
         }
     }
@@ -105,9 +100,15 @@ class OverviewViewModel(app: Application, private val context: Context) : Androi
         _navigateToSelectedProperties.value = null
     }
 
-    fun updateFilterProperty(filter: MarsApiFilter) {
+    fun getProperties(filter: MarsApiFilter) {
         coroutineScope.launch {
-            _properties.value = repository.getProperties(filter)
+            if (isNetworkAvailable()) {
+                _status.value = MarsApiStatus.LOADING
+                _properties.value = repository.getFilteredProperties(filter)
+                _status.value = MarsApiStatus.DONE
+            } else {
+                _status.value = MarsApiStatus.FAILED
+            }
         }
     }
 
