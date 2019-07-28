@@ -20,6 +20,7 @@ package com.example.android.marsrealestate.overview
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.android.marsrealestate.data.local.MarsDatabase
 import com.example.android.marsrealestate.data.local.MarsEntity
@@ -47,6 +48,7 @@ class OverviewViewModel(app: Application, private val context: Context) : Androi
     // The internal MutableLiveData String that stores the status of the most recent request
     private val _status = MutableLiveData<MarsApiStatus>()
     private val _properties = MutableLiveData<List<MarsEntity>?>()
+    //    private var _databaseProperties: List<MarsEntity>? = emptyList()
     private val _navigateToSelectedProperties = MutableLiveData<MarsEntity>()
 
     // The external immutable LiveData for the request status String
@@ -63,33 +65,56 @@ class OverviewViewModel(app: Application, private val context: Context) : Androi
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
      */
     init {
-        populateDatabase()
+        displayData()
     }
 
     /**
-     * Populate data from database.
-     * Sets the value of the status LiveData to the Mars API status.
+     * Displaying data from database
      */
-    fun populateDatabase() {
+    fun displayData() {
         coroutineScope.launch {
-            if (isNetworkAvailable()) {
-                try {
-                    _status.value = MarsApiStatus.LOADING
-                    _properties.value = repository.fetchProperties()
-                    _status.value = MarsApiStatus.DONE
-                } catch (e: Throwable) {
-                    _status.value = MarsApiStatus.FAILED
-                }
-            } else {
+            refreshDatabase()
+            loadData()
+        }
+    }
+
+    /**
+     * Checking if connection is available for refreshing database
+     */
+    fun isNetworkAvailable(): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        val activeNetworkInfo = connectivityManager!!.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    }
+
+    /**
+     * Synchronized data in server and database
+     */
+    private suspend fun refreshDatabase() {
+        if (isNetworkAvailable()) {
+            try {
+                _status.value = MarsApiStatus.LOADING
+                repository.refreshData()
+                Log.d("databaseFun", "refreshing data...")
+                _status.value = MarsApiStatus.DONE
+                Log.d("databaseFun", "refreshing is done")
+            } catch (e: Throwable) {
                 _status.value = MarsApiStatus.FAILED
             }
         }
     }
 
-    fun isNetworkAvailable(): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
-        val activeNetworkInfo = connectivityManager!!.activeNetworkInfo
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    /**
+     * Load data from database. If database is empty then show connection error image
+     */
+    private suspend fun loadData() {
+        val databaseEntity = repository.fetchProperties()
+        if (databaseEntity!!.count() != 0) {
+            _properties.value = databaseEntity
+        } else {
+            _status.value = MarsApiStatus.FAILED
+            _properties.value = emptyList()
+        }
     }
 
     fun displayPropertyDetails(marsEntity: MarsEntity) {
@@ -100,14 +125,20 @@ class OverviewViewModel(app: Application, private val context: Context) : Androi
         _navigateToSelectedProperties.value = null
     }
 
+    /**
+     * Display mars properties with provided filter. This function is used
+     * in overflow menu
+     */
     fun getProperties(filter: MarsApiFilter) {
         coroutineScope.launch {
             if (isNetworkAvailable()) {
-                _status.value = MarsApiStatus.LOADING
-                _properties.value = repository.getFilteredProperties(filter)
-                _status.value = MarsApiStatus.DONE
-            } else {
-                _status.value = MarsApiStatus.FAILED
+                try {
+                    _status.value = MarsApiStatus.LOADING
+                    _properties.value = repository.getFilteredProperties(filter)
+                    _status.value = MarsApiStatus.DONE
+                } catch (e: Throwable) {
+                    _status.value = MarsApiStatus.FAILED
+                }
             }
         }
     }

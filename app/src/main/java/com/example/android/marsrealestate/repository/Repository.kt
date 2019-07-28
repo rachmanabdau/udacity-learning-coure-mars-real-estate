@@ -15,7 +15,6 @@ class Repository(private val database: MarsDatabase) {
      */
     suspend fun fetchProperties(): List<MarsEntity>? {
         return withContext(Dispatchers.IO) {
-            refreshData()
             database.marsDao.getAlldata()
         }
     }
@@ -24,9 +23,11 @@ class Repository(private val database: MarsDatabase) {
      * Refresh data by retrieving data from server and then save it to database
      */
     suspend fun refreshData() {
-        val propertiesFromNetwork = MarsApi.retrofitService.getPRoperties().await()
-        for (i in propertiesFromNetwork) {
-            database.marsDao.insert(MarsEntity.networkToLocal(i))
+        withContext(Dispatchers.IO) {
+            val propertiesFromNetwork = MarsApi.retrofitService.getPRoperties().await()
+            for (i in propertiesFromNetwork) {
+                database.marsDao.insert(MarsEntity.networkToLocal(i))
+            }
         }
     }
 

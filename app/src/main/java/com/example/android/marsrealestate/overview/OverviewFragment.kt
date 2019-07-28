@@ -80,7 +80,7 @@ class OverviewFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item!!.itemId) {
-            R.id.refresh_data -> viewModel.populateDatabase()
+            R.id.refresh_data -> viewModel.displayData()
             else -> {
                 viewModel.getProperties(when (item.itemId) {
                     R.id.show_rent_menu -> MarsApiFilter.SHOW_RENT
